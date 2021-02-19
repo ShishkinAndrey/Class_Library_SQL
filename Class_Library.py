@@ -19,7 +19,7 @@ class Library:
           author 
         );"""
         self.command_insert = "INSERT INTO Library(name,year,pages,rating,price,author) VALUES (?, ?, ?, ?, ?, ?)"
-        self.command_read = f"SELECT * FROM Library"
+        self.command_read_all_rows = f"SELECT * FROM Library"
         self.command_delete = f"DELETE from Library where number = ?"
 
     def create_library_table(self):
@@ -29,10 +29,15 @@ class Library:
         self.__driver.executemany(self.command_insert, values)
 
     def review_all_table(self):
-        return self.__driver.fetchall(self.command_read)
+        return self.__driver.fetchall(self.command_read_all_rows)
 
-    def get_field(self, query, field):
-        ...
+    def get_field(self, field, field_value):
+        command_get_field = f"SELECT name,year,pages,rating,price,author FROM Library WHERE {field} = {field_value}"
+        return self.__driver.fetchall(command_get_field)
+
+    def delete_row(self, number):
+        self.__driver.executemany(self.command_delete, str(number))
+
 
 
 class SqliteDb:
@@ -60,9 +65,9 @@ class SqliteDb:
 
     def execute(self, query):
         try:
-            self.__get_cursor().execute(query)
+            result = self.__get_cursor().execute(query)
             self.__commit_and_close()
-            print('Query successfully')
+            return result
         except sqlite3.Error as e:
             print(f"The error '{e}' occurred")
 
@@ -99,12 +104,15 @@ class SqliteDb:
 if __name__ == '__main__':
     lib = Library()
     # lib.create_library_table()
-
+    #
     # lib_from_json = get_library_from_json()
     # ll = []
     # for i in lib_from_json:
     #     ll.append(tuple(i.values()))
-
-    # lib.insert_book(lib.command_insert, ll)
+    # print(ll)
+    # lib.insert_book(ll)
     # l.delete_row('3')
-    print(lib.review_all_table())
+    # print(lib.review_all_table())
+    # new_row = lib.get_field('year', 1997)
+    # lib.insert_book(new_row)
+    lib.delete_row(3)
