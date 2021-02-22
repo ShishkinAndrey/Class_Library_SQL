@@ -11,12 +11,12 @@ class Library:
         self.command_create_table = """
         CREATE TABLE IF NOT EXISTS Library (
           number integer primary key AUTOINCREMENT ,
-          name ,
+          name string,
           year ,
           pages ,
           rating ,
           price ,
-          author 
+          author string
         );"""
         self.command_insert = "INSERT INTO Library(name,year,pages,rating,price,author) VALUES (?, ?, ?, ?, ?, ?)"
         self.command_read_all_rows = f"SELECT * FROM Library"
@@ -31,13 +31,20 @@ class Library:
     def review_all_table(self):
         return self.__driver.fetchall(self.command_read_all_rows)
 
-    def get_field(self, field, field_value):
+    def search_book(self, field, field_value):
         command_get_field = f"SELECT name,year,pages,rating,price,author FROM Library WHERE {field} = {field_value}"
         return self.__driver.fetchall(command_get_field)
 
     def delete_row(self, number):
         self.__driver.executemany(self.command_delete, str(number))
 
+    def edit_field(self, number, field, field_value):
+        command_edit_field = f"UPDATE Library set {field} = '{field_value}' where number = {number}"
+        self.__driver.execute(command_edit_field)
+
+    def sort_library_asc(self, column):
+        command_sort = f'SELECT * FROM Library ORDER BY {column}'
+        self.__driver.execute(command_sort)
 
 
 class SqliteDb:
@@ -89,30 +96,24 @@ class SqliteDb:
         except sqlite3.Error as e:
             print(f"The error '{e}' occurred")
 
-    #
-    # def delete_row(self, id_row):
-    #     connect = self.connection
-    #     cursor = connect.cursor()
-    #     try:
-    #         cursor.execute(self.command_delete, (id_row, ))
-    #         connect.commit()
-    #         cursor.close()
-    #         print('Row is deleted successfully')
-    #     except sqlite3.Error as e:
-    #         print(f"The error '{e}' occurred")
+
 
 if __name__ == '__main__':
     lib = Library()
     # lib.create_library_table()
-    #
+    # #
     # lib_from_json = get_library_from_json()
     # ll = []
     # for i in lib_from_json:
     #     ll.append(tuple(i.values()))
-    # print(ll)
+    #
     # lib.insert_book(ll)
-    # l.delete_row('3')
-    # print(lib.review_all_table())
-    # new_row = lib.get_field('year', 1997)
+
+    print(lib.review_all_table())
+    # lib.edit_field(4, 'name',  'Shishkevich')
+    lib.sort_library('year')
+    print(lib.review_all_table())
+    # new_row = lib.get_field('year', 1984)
+    # print(new_row)
     # lib.insert_book(new_row)
-    lib.delete_row(3)
+    # lib.delete_row(2)
