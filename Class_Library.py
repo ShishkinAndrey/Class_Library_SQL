@@ -1,5 +1,6 @@
-from Library import get_library_from_json
 import sqlite3
+
+from Library import get_library_from_json
 
 
 class Library:
@@ -42,9 +43,9 @@ class Library:
         command_edit_field = f"UPDATE Library set {field} = '{field_value}' where number = {number}"
         self.__driver.execute(command_edit_field)
 
-    def sort_library_asc(self, column):
-        command_sort = f'SELECT * FROM Library ORDER BY {column}'
-        self.__driver.execute(command_sort)
+    def sort_library(self, column, reverse):
+        command_sort = f'SELECT * FROM Library ORDER BY {column} {reverse}'
+        return self.__driver.fetchall(command_sort)
 
 
 class SqliteDb:
@@ -97,7 +98,6 @@ class SqliteDb:
             print(f"The error '{e}' occurred")
 
 
-
 if __name__ == '__main__':
     lib = Library()
     # lib.create_library_table()
@@ -108,11 +108,12 @@ if __name__ == '__main__':
     #     ll.append(tuple(i.values()))
     #
     # lib.insert_book(ll)
-
-    print(lib.review_all_table())
+    print(lib.get_columns_names())
+    # print(lib.review_all_table())
     # lib.edit_field(4, 'name',  'Shishkevich')
-    lib.sort_library('year')
-    print(lib.review_all_table())
+
+    # print(lib.sort_library('pages', 'DESC'))
+
     # new_row = lib.get_field('year', 1984)
     # print(new_row)
     # lib.insert_book(new_row)
