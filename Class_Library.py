@@ -73,9 +73,8 @@ class SqliteDb:
 
     def execute(self, query):
         try:
-            result = self.__get_cursor().execute(query)
+            self.__get_cursor().execute(query)
             self.__commit_and_close()
-            return result
         except sqlite3.Error as e:
             print(f"The error '{e}' occurred")
 
@@ -108,7 +107,7 @@ if __name__ == '__main__':
     #     ll.append(tuple(i.values()))
     #
     # lib.insert_book(ll)
-    print(lib.get_columns_names())
+    print(lib.search_book('pages', 293))
     # print(lib.review_all_table())
     # lib.edit_field(4, 'name',  'Shishkevich')
 
