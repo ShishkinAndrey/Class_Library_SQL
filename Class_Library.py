@@ -11,13 +11,13 @@ class Library:
 
         self.command_create_table = """
         CREATE TABLE IF NOT EXISTS Library (
-          number integer primary key AUTOINCREMENT ,
-          name string,
-          year ,
-          pages ,
-          rating ,
-          price ,
-          author string
+          number INTEGER PRIMARY KEY AUTOINCREMENT ,
+          name TEXT,
+          year INTEGER,
+          pages INTEGER,
+          rating REAL,
+          price REAL,
+          author TEXT
         );"""
         self.command_insert = "INSERT INTO Library(name,year,pages,rating,price,author) VALUES (?, ?, ?, ?, ?, ?)"
         self.command_read_all_rows = f"SELECT * FROM Library"
