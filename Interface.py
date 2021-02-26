@@ -10,15 +10,21 @@ def _input():
 
 
 def command_add():
-    new_book = list()
     name = input('Введите имя книги')
-    year = int(input('Введите год выпуска книги'))
-    pages = int(input('Введите кол-во страниц книги'))
-    rating = float(input('Введите рейтинг книги'))
-    price = float(input('Введите цену книги'))
+    year = input('Введите год выпуска книги')
+    while not year.isdigit():
+        year = input('Введите год выпуска книги')
+    pages = input('Введите кол-во страниц книги')
+    while not pages.isdigit():
+        year = input('Введите кол-во страниц книги')
+    rating = input('Введите рейтинг книги')
+    while rating.isalpha():
+        rating = input('Введите рейтинг книги')
+    price = input('Введите цену книги')
+    while price.isalpha():
+        price = input('Введите цену книги')
     author = input('Введите автора книги')
-    new_book.append((name, year, pages, rating, price, author))
-    return new_book
+    return [(name, int(year), int(pages), float(rating), float(price), author)]
 
 
 def get_number():
@@ -39,6 +45,9 @@ def new_field_value():
 def choose_reverse_sort():
     choose_reverse = input(f'Выберите способ сортировки: по возрастанию или по убыванию. '
                            f'Если по возранию - введите да, если по убыванию - нет. ').lower()
+    while choose_reverse not in ['да', 'нет']:
+        choose_reverse = input(f'Выберите способ сортировки: по возрастанию или по убыванию. '
+                               f'Если по возранию - введите да, если по убыванию - нет. ').lower()
     if choose_reverse == 'нет':
         choose_reverse = 'DESC'
     elif choose_reverse == 'да':

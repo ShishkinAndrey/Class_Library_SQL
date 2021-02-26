@@ -7,7 +7,7 @@ class Library:
     DEFAULT_DB_NAME = "library.sqlite"
 
     def __init__(self):
-        self.__driver = SqliteDb(self.DEFAULT_DB_NAME)
+        self.__driver = DbContextManager(sqlite3, self.DEFAULT_DB_NAME)
 
         self.command_create_table = """
         CREATE TABLE IF NOT EXISTS Library (
@@ -24,77 +24,65 @@ class Library:
         self.command_delete = f"DELETE from Library where number = ?"
 
     def create_library_table(self):
-        self.__driver.execute(self.command_create_table)
+        with self.__driver as cursor:
+            cursor.execute(self.command_create_table)
 
     def insert_book(self, values):
-        self.__driver.executemany(self.command_insert, values)
+        with self.__driver as cursor:
+            cursor.executemany(self.command_insert, values)
 
     def review_all_table(self):
-        return self.__driver.fetchall(self.command_read_all_rows)
+        with self.__driver as cursor:
+            cursor.execute(self.command_read_all_rows)
+            return cursor.fetchall()
 
     def search_book(self, field, field_value):
         command_get_field = f"SELECT name,year,pages,rating,price,author FROM Library WHERE {field} = {field_value}"
-        return self.__driver.fetchall(command_get_field)
+        with self.__driver as cursor:
+            cursor.execute(command_get_field)
+            return cursor.fetchall()
 
     def delete_row(self, number):
-        self.__driver.executemany(self.command_delete, str(number))
+        with self.__driver as cursor:
+            cursor.executemany(self.command_delete, str(number))
 
     def edit_field(self, number, field, field_value):
         command_edit_field = f"UPDATE Library set {field} = '{field_value}' where number = {number}"
-        self.__driver.execute(command_edit_field)
+        with self.__driver as cursor:
+            cursor.execute(command_edit_field)
 
     def sort_library(self, column, reverse):
         command_sort = f'SELECT * FROM Library ORDER BY {column} {reverse}'
-        return self.__driver.fetchall(command_sort)
+        with self.__driver as cursor:
+            cursor.execute(command_sort)
+            return cursor.fetchall()
 
 
-class SqliteDb:
-    def __init__(self, database_name: str):
+class DbContextManager:
+    def __init__(self, driver, database_name):
+        self.__driver = driver
         self.database_name = database_name
-        self.connection = self.create_connection(self.database_name)
 
-    @staticmethod
-    def create_connection(path):
-        connection = None
-        try:
-            connection = sqlite3.connect(path)
-            print("Connection to SQLite DB successful")
-        except sqlite3.Error as e:
-            print(f"The error '{e}' occurred")
-        return connection
+    def __enter__(self):
+        """Выполняет подключение к БД и возвращает курсор для выполнения SQL запросов."""
+        print("Каждый раз при входе в контекстный менеджер создаем объект Connection и Cursor")
+        self.connection = self.__driver.connect(self.database_name)
+        self.cursor = self.connection.cursor()
+        return self.cursor
 
-    def __get_cursor(self):
-        cursor = self.connection.cursor()
-        return cursor
-
-    def __commit_and_close(self):
-        self.connection.commit()
-        self.__get_cursor().close()
-
-    def execute(self, query):
-        try:
-            self.__get_cursor().execute(query)
-            self.__commit_and_close()
-        except sqlite3.Error as e:
-            print(f"The error '{e}' occurred")
-
-    def executemany(self, query, values=None):
-        try:
-            self.__get_cursor().executemany(query, values)
-            self.__commit_and_close()
-            print('Query successfully')
-        except sqlite3.Error as e:
-            print(f"The error '{e}' occurred")
-
-    def fetchall(self, query):
-        cursor = self.__get_cursor()
-        try:
-            cursor.execute(query)
-            result = cursor.fetchall()
-            self.__commit_and_close()
-            return result
-        except sqlite3.Error as e:
-            print(f"The error '{e}' occurred")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+               Автоматически закрывает все соединения.
+               В зависимости от успеха выполнения SQL запроса отменяет или применяет изменения.
+               """
+        print("Начинаем выход из контекстного менеджера ...")
+        print("Закрываем курсор ...")
+        self.cursor.close()
+        if isinstance(exc_type, Exception):
+            self.connection.rollback()
+        else:
+            self.connection.commit()
+        self.connection.close()
 
 
 if __name__ == '__main__':
@@ -107,8 +95,8 @@ if __name__ == '__main__':
     #     ll.append(tuple(i.values()))
     #
     # lib.insert_book(ll)
-    print(lib.search_book('pages', 293))
-    # print(lib.review_all_table())
+    # print(lib.search_book('pages', 293))
+    print(lib.review_all_table())
     # lib.edit_field(4, 'name',  'Shishkevich')
 
     # print(lib.sort_library('pages', 'DESC'))
